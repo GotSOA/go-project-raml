@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:json="http://www.mulesoft.org/schema/mule/json"
+	xmlns:vm="http://www.mulesoft.org/schema/mule/vm"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:context="http://www.springframework.org/schema/context" xmlns:apikit="http://www.mulesoft.org/schema/mule/apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:spring="http://www.springframework.org/schema/beans" xmlns:core="http://www.mulesoft.org/schema/mule/core" version="EE-3.5.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd 
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+http://www.mulesoft.org/schema/mule/apikit http://www.mulesoft.org/schema/mule/apikit/current/mule-apikit.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+    <context:property-placeholder location="api.properties"/>
+    
+    <http:connector name="defaultConnector" doc:name="HTTP\HTTPS">
+    	<service-overrides sessionHandler="org.mule.session.NullSessionHandler"/>
+    </http:connector>
+    
+    <apikit:config name="apiConfig" raml="api.raml" consoleEnabled="true" consolePath="console" doc:name="Router"/>
+    <apikit:mapping-exception-strategy name="apiKitGlobalExceptionMapping">  
+        <apikit:mapping statusCode="404"> 
+            <apikit:exception value="org.mule.module.apikit.exception.NotFoundException"/>  
+            <set-property propertyName="Content-Type" value="application/json"></set-property>  
+            <set-payload value="{ &quot;message&quot;: &quot;Resource not found&quot; }"></set-payload> 
+        </apikit:mapping>  
+        <apikit:mapping statusCode="405"> 
+            <apikit:exception value="org.mule.module.apikit.exception.MethodNotAllowedException"/>  
+            <set-property propertyName="Content-Type" value="application/json"></set-property>  
+            <set-payload value="{ &quot;message&quot;: &quot;Method not allowed&quot; }"></set-payload> 
+        </apikit:mapping>  
+        <apikit:mapping statusCode="415"> 
+            <apikit:exception value="org.mule.module.apikit.exception.UnsupportedMediaTypeException"/>  
+            <set-property propertyName="Content-Type" value="application/json"></set-property>  
+            <set-payload value="{ &quot;message&quot;: &quot;Unsupported media type&quot; }"></set-payload> 
+        </apikit:mapping>  
+        <apikit:mapping statusCode="406"> 
+            <apikit:exception value="org.mule.module.apikit.exception.NotAcceptableException"/>  
+            <set-property propertyName="Content-Type" value="application/json"></set-property>  
+            <set-payload value="{ &quot;message&quot;: &quot;Not acceptable&quot; }"></set-payload> 
+        </apikit:mapping>  
+        <apikit:mapping statusCode="400"> 
+            <apikit:exception value="org.mule.module.apikit.exception.BadRequestException"/>  
+            <set-property propertyName="Content-Type" value="application/json"></set-property>  
+            <set-payload value="{ &quot;message&quot;: &quot;Bad request&quot; }"></set-payload> 
+        </apikit:mapping> 
+    </apikit:mapping-exception-strategy>
+    <flow name="main" doc:name="main">
+        <http:inbound-endpoint connector-ref="defaultConnector" address="http://${http.host}:${http.port}/${contextPath}/${version}" doc:name="HTTP" exchange-pattern="request-response" />
+        <apikit:router config-ref="apiConfig" doc:name="APIkit Router" />
+        <exception-strategy ref="apiKitGlobalExceptionMapping" doc:name="Reference Exception Strategy" />
+    </flow>
+    <!--  getCampaigns for a given Agency -->    
+    <flow name="get:/campaigns:apiConfig" doc:name="get:/campaigns:apiConfig">
+    	<logger message="In GET campaigns for a specific agency..." level="INFO" doc:name="Logger"/>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+        <set-session-variable variableName="agencyId" value="#[json:agencyId]" doc:name="Session Variable" />
+        <set-session-variable variableName="pageFrom" value="#[json:pageFrom]" doc:name="Session Variable"/>
+		<set-session-variable variableName="pageTo" value="#[json:pageTo]" doc:name="Session Variable" />
+        <all doc:name="All">
+            <set-payload value="{   &quot;status&quot;: &quot;ACK&quot; }" doc:name="Send ACK" />
+            <async doc:name="Async">
+                <vm:outbound-endpoint exchange-pattern="one-way" path="Q.processRequest" doc:name="VM-transforms" />
+            </async>
+        </all>
+        <!-- <exception-strategy ref="global-main-exception-strategy" doc:name="Reference Exception Strategy" /> -->
+    </flow>  
+    <!--  getCampaign -->
+    <flow name="get:/campaigns/{campaignId}:apiConfig" doc:name="get:/campaigns/{campaignId}:apiConfig">
+        <logger message="In GET campaign-by-id for a specific agency..." level="INFO" doc:name="Logger"/>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+        <set-session-variable variableName="campaignId" value="#[json:campaignId]" doc:name="Session Variable" />
+        <!-- crap shoot, use another VM later -->
+		<vm:outbound-endpoint exchange-pattern="one-way" doc:name="VM-processRequest" path="Q.processRequest" />
+    </flow>   
+    <!-- GetJobs for a given campaign --> 
+    <flow name="get:/campaigns/{campaignId}/jobs:apiConfig" doc:name="get:/campaigns/{campaignId}/jobs:apiConfig">
+        <logger message="In GET Jobs for a specific campaignId..." level="INFO" doc:name="Logger"/>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+        <!-- crap shoot, use another VM later -->
+		<vm:outbound-endpoint exchange-pattern="one-way" doc:name="VM-processRequest" path="Q.processRequest" />
+    </flow>  
+    <!--  getJob -->
+    <flow name="get:/campaigns/{campaignId}/jobs/{jobId}:apiConfig" doc:name="get:/campaigns/{campaignId}/jobs/{jobId}:apiConfig">
+        <logger message="In GET Job-by-id for a specific campaignId..." level="INFO" doc:name="Logger"/>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+        <set-session-variable variableName="jobId" value="#[json:jobId]" doc:name="Session Variable" />
+        <!-- crap shoot, use another VM later -->
+		<vm:outbound-endpoint exchange-pattern="one-way" doc:name="VM-processRequest" path="Q.processRequest" />
+    </flow> 
+    <!-- GetAds for a given job --> 
+    <flow name="get:/campaigns/{campaignId}/jobs/{jobId}/ads:apiConfig" doc:name="get:/campaigns/{campaignId}/jobs/{jobId}/ads:apiConfig">
+        <logger message="In GET Ads for a specific jobId..." level="INFO" doc:name="Logger"/>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+        <!-- crap shoot, use another VM later -->
+		<vm:outbound-endpoint exchange-pattern="one-way" doc:name="VM-processRequest" path="Q.processRequest" />
+    </flow>  
+    <!--  getAd -->
+    <flow name="get:/campaigns/{campaignId}/jobs/{jobId}/ads/{adId}:apiConfig" doc:name="get:/campaigns/{campaignId}/jobs/{jobId}/ads/{adId}:apiConfig">
+        <logger message="In GET Ad-by-id for a specific job..." level="INFO" doc:name="Logger"/>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+        <set-session-variable variableName="jobId" value="#[json:jobId]" doc:name="Session Variable" />
+        <!-- crap shoot, use another VM later -->
+		<vm:outbound-endpoint exchange-pattern="one-way" doc:name="VM-processRequest" path="Q.processRequest" />
+    </flow>               
+    <flow name="request-processing-flow" doc:name="request-processing-flow">
+        <vm:inbound-endpoint exchange-pattern="one-way" doc:name="VM-processRequest" path="Q.processRequest" />
+		<logger level="INFO" message="received request: #[payload]"/>
+    </flow>      
+</mule>

@@ -1,0 +1,105 @@
+#%RAML 0.8
+
+title: Sample Arizona API
+baseUri: http://localhost:8081/api/v1
+version: 1.0
+documentation:
+  - title: Arizona GO Project
+    content: |
+      Arizona Advertising Campaign API Manager
+                         
+/campaigns:
+    displayName: getCampaigns
+    description: Retrieves a list of campaigns, filtered (by agency) and with pagination           
+    get:
+      queryParameters:
+        page:
+          description: Specify the page that you want to retrieve
+          type: integer
+          required: true
+          example: 1 
+        perPage:
+          description: Specify the amount of items that will be retrieved per page
+          type: integer
+          minimum: 10
+          maximum: 200
+          default: 50
+          example: 100
+        agencyId:
+          description: the agency owning the campaigns
+          type: integer
+          required: true
+      responses:
+        200:
+          description: |
+            Campaigns retrieved successfully
+          body:
+            application/json:
+              schema: !include schemas/go-project-schema.json
+              example: !include examples/campaigns-get-example.json                   
+                    
+    /{campaignId}:
+      displayName: getCampaign
+      description: A specific campaign, a member of the campaigns collection
+      get:
+        queryParameters:
+          agencyId:
+            description: the agency owning the campaigns
+            type: integer
+            required: true
+        responses:
+          200:
+            description: |
+              Campaign retrieved successfully
+            body:
+              application/json:
+                schema: !include schemas/go-project-schema.json
+                example: !include examples/campaign-get-example.json
+                
+      /jobs:
+        displayName: Jobs
+        description: A collection of jobs within a specific campaign
+        get:      
+          responses:
+            200:
+              description: |
+                Jobs retrieved successfully
+              body:
+                application/json:
+                  example: !include examples/jobs-get-example.json
+                      
+        /{jobId}:
+          displayName: getJob
+          description: A specific job, a member of the jobs collection
+          get:      
+            responses:
+              200:
+                description: |
+                  Job retrieved successfully
+                body:
+                  application/json:
+                    example: !include examples/job-get-example.json
+                    
+          /ads:
+            displayName: Ads
+            description: A collection of ads within a specific job
+            get:      
+              responses:
+                200:
+                  description: |
+                    Ads retrieved successfully
+                  body:
+                    application/json:
+                      example: !include examples/ads-get-example.json
+                        
+            /{adId}:
+              displayName: getAd
+              description: A specific ad, a member of the ads collection
+              get:      
+                responses:
+                  200:
+                    description: |
+                      Ad retrieved successfully
+                    body:
+                      application/json:
+                        example: !include examples/ad-get-example.json                    

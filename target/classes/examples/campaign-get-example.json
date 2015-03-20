@@ -1,0 +1,9 @@
+{
+	"id": 123,
+    "name": "a sample campaign1",
+    "agency": "Red Chili",
+    "client": "Nextel",
+    "timeFrame": "2015-03-17T18:25:43-05:00",
+    "status": "work-in-progress",
+	"jobs": []
+}

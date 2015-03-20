@@ -1,0 +1,51 @@
+{
+	"count" : 5,
+    "campaigns" : 
+	[
+	    {
+	        "id": 123,
+	        "name": "a sample campaign1",
+	        "agency": "Red Chili",
+	        "client": "Nextel",
+	        "timeFrame": "2015-03-17T18:25:43-05:00",
+	        "status": "work-in-progress",
+	        "jobs": []
+	    },
+	    {
+	        "id": 124,
+	        "name": "a sample campaign2",
+	        "agency": "Whiskey Face",
+	        "client": "Verizon",
+	        "timeFrame": "2015-03-17T19:25:43-05:00",
+	        "status": "in-review",
+	        "jobs": []
+	    },
+	    {
+	        "id": 125,
+	        "name": "a sample campaign3",
+	        "agency": "The Dubliners",
+	        "client": "Vivo",
+	        "timeFrame": "2015-03-17T20:25:43-05:00",
+	        "status": "pending-submission",
+	        "jobs": []
+	    },
+	    {
+	        "id": 126,
+	        "name": "a sample campaign4",
+	        "agency": "Bottle Filed Bond",
+	        "client": "TIM",
+	        "timeFrame": "2015-03-17T21:25:43-05:00",
+	        "status": "completed",
+	        "jobs": []
+	    },
+	    {
+	        "id": 127,
+	        "name": "a sample campaign5",
+	        "agency": "Gaelic Storm",
+	        "client": "Claro",
+	        "timeFrame": "2015-03-17T22:25:43-05:00",
+	        "status": "cancelled",
+	        "jobs": []
+	    }
+	]
+}
