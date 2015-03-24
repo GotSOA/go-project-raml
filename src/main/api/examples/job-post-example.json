@@ -1,0 +1,5 @@
+{
+    "name": "a sample job",
+    "baseFile", "filePath\fileName0",
+    "advertisements": []
+}
