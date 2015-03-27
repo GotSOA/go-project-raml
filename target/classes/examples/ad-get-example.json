@@ -1,5 +1,8 @@
 {
 	"id":123001, 
 	"channel": "Vogue",
-	"file": "filePath\fileName1.1"
+	"file": "filePath\fileName1.1",
+	"approvedByAgency": true,
+	"contactId": 12345,
+	"status": "approved"
 }

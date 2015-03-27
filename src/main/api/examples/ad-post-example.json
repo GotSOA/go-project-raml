@@ -2,5 +2,6 @@
 	"channel":  "Vogue",
 	"file": "filePath\fileName1.1",
 	"approvedByAgency": false,
-	"contactId": 789
+	"contactId": 789,
+	"status": "new"
 }

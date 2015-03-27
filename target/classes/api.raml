@@ -28,7 +28,14 @@ documentation:
         agencyId:
           description: the agency owning the campaigns
           type: integer
-          required: true
+          required: false
+          # not required, because when profile='arizona', 
+          # the admin may be interested in looking at campaigns across all agencies
+        profile:
+          description: the profile used to log in to the Go portal
+          # could be replaced by a profileId as an integer
+          type: string
+          required: true          
       responses:
         200:
           description: |
@@ -111,18 +118,7 @@ documentation:
                 body:
                   application/json:
                     example: !include examples/job-get-example.json
-          /baseFile:  
-            post:
-              description: File content for a job's base file                    
-              body:
-                binary/octet-stream:
-                multipart/form-data:
-                  formParameters:
-                    file:
-                      description: The file to be uploaded
-                      required: true
-                      type: file
-
+                    
           /ads:
             displayName: Ads
             description: A collection of ads within a specific job
@@ -161,4 +157,107 @@ documentation:
                       Ad retrieved successfully
                     body:
                       application/json:
-                        example: !include examples/ad-get-example.json                    
+                        example: !include examples/ad-get-example.json
+              /baseFile:
+                description: base file for a given job
+                get:
+                  description: Get the base file content
+                  responses:
+                    200:
+                      body:
+                        binary/octet-stream:
+                          example: !include examples/baseFileSample.png         
+                post:
+                  description: Upload file content for a job's base file                    
+                  body:
+                    binary/octet-stream:
+                    multipart/form-data:
+                      formParameters:
+                        file:
+                          description: The file to be uploaded
+                          required: true
+                          type: file
+                                                 
+/contacts:
+    displayName: Contacts
+    description: Retrieves a list of contacts, filtered (by profile) and with pagination 
+    # method only available to 'Arizona' profile          
+    get:
+      queryParameters:
+        page:
+          description: Specify the page that you want to retrieve
+          type: integer
+          required: true
+          example: 1 
+        perPage:
+          description: Specify the amount of items that will be retrieved per page
+          type: integer
+          minimum: 10
+          maximum: 200
+          default: 50
+          example: 100
+        profile:
+          description: the profile used to log in to the Go portal
+          # could be replaced by a profileId as an integer
+          type: string
+          required: true          
+      responses:
+        200:
+          description: |
+            Contacts retrieved successfully
+          body:
+            application/json:
+              schema: !include schemas/go-project-schema.json
+              example: !include examples/contacts-get-example.json           
+    post:
+      description: New Contact
+      body:
+        application/json:
+          schema: !include schemas/go-project-schema.json
+          example: !include examples/contact-post-example.json
+      responses:
+        200:
+          description: |
+            Request Acknowledged
+          body:
+            application/json:
+              example: |
+                {
+                  "status": "ACK"
+                }
+                                    
+    /{contactId}:
+      displayName: getContact by Id
+      description: A specific contact, a member of the contacts collection
+      get:
+        queryParameters:
+          agencyId:
+            description: the agency where the contact belongs
+            type: integer
+            required: true
+        responses:
+          200:
+            description: |
+              Contact retrieved successfully by Id
+            body:
+              application/json:
+                schema: !include schemas/go-project-schema.json
+                example: !include examples/contact-get-example.json
+                
+    /{contactEmail}:
+      displayName: getContact by Email
+      description: A specific contact, a member of the contacts collection
+      get:
+        queryParameters:
+          agencyId:
+            description: the agency where the contact belongs
+            type: integer
+            required: true
+        responses:
+          200:
+            description: |
+              Contact retrieved successfully by Email
+            body:
+              application/json:
+                schema: !include schemas/go-project-schema.json
+                example: !include examples/contact-get-example.json
