@@ -1,6 +1,6 @@
 #%RAML 0.8
 
-title: Sample Arizona API
+title: Arizona GO Project API
 baseUri: http://localhost:8081/api/v1
 version: 1.0
 documentation:
@@ -9,7 +9,7 @@ documentation:
       Arizona Advertising Campaign API Manager
                          
 /campaigns:
-    displayName: getCampaigns
+    displayName: Campaigns
     description: Retrieves a list of campaigns, filtered (by agency) and with pagination           
     get:
       queryParameters:
@@ -28,7 +28,13 @@ documentation:
         agencyId:
           description: the agency owning the campaigns
           type: integer
-          required: true
+          required: false
+          # not required, because when profile='arizona', the admin may be interested in looking at campaigns across all agencies
+        profile:
+          description: the profile used to log in to the Go portal
+          # could be replaced by a profileId as an integer
+          type: string
+          required: true          
       responses:
         200:
           description: |
@@ -37,7 +43,23 @@ documentation:
             application/json:
               schema: !include schemas/go-project-schema.json
               example: !include examples/campaigns-get-example.json                   
-                    
+    post:
+      description: New Campaign
+      body:
+        application/json:
+          schema: !include schemas/go-project-schema.json
+          example: !include examples/campaign-post-example.json
+      responses:
+        200:
+          description: |
+            Request Acknowledged
+          body:
+            application/json:
+              example: |
+                {
+                  "status": "ACK"
+                }
+                                    
     /{campaignId}:
       displayName: getCampaign
       description: A specific campaign, a member of the campaigns collection
@@ -67,7 +89,23 @@ documentation:
               body:
                 application/json:
                   example: !include examples/jobs-get-example.json
-                      
+        post:
+          description: New Job
+          body:
+            application/json:
+              schema: !include schemas/go-project-schema.json
+              example: !include examples/job-post-example.json
+          responses:
+            200:
+              description: |
+                Request Acknowledged
+              body:
+                application/json:
+                  example: |
+                    {
+                      "status": "ACK"
+                    }                   
+                                        
         /{jobId}:
           displayName: getJob
           description: A specific job, a member of the jobs collection
@@ -79,7 +117,27 @@ documentation:
                 body:
                   application/json:
                     example: !include examples/job-get-example.json
-                    
+          /baseFile:  
+            description: base file for a given job
+            get:
+              description: Get the base file content
+              responses:
+                200:
+                  body:
+                    binary/octet-stream:
+                      example:
+                        !include examples/baseFileSample.pdf          
+            post:
+              description: Upload file content for a job's base file                    
+              body:
+                binary/octet-stream:
+                multipart/form-data:
+                  formParameters:
+                    file:
+                      description: The file to be uploaded
+                      required: true
+                      type: file
+
           /ads:
             displayName: Ads
             description: A collection of ads within a specific job
@@ -91,7 +149,23 @@ documentation:
                   body:
                     application/json:
                       example: !include examples/ads-get-example.json
-                        
+            post:
+              description: New Ad
+              body:
+                application/json:
+                  schema: !include schemas/go-project-schema.json
+                  example: !include examples/ad-post-example.json
+              responses:
+                200:
+                  description: |
+                    Request Acknowledged
+                  body:
+                    application/json:
+                      example: |
+                        {
+                          "status": "ACK"
+                        }
+                                              
             /{adId}:
               displayName: getAd
               description: A specific ad, a member of the ads collection
